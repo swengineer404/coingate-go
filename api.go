@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -17,14 +18,14 @@ type apiClient struct {
 type apiResponse struct {
 }
 
-type apiError struct {
+type Error struct {
 	Message string   `json:"message"`
 	Reason  string   `json:"reason"`
 	Errors  []string `json:"errors"`
 }
 
-func (a *apiError) Error() string {
-	return a.Message
+func (a *Error) Error() string {
+	return fmt.Sprintf("%s [%s]", a.Message, strings.Join(a.Errors, ", "))
 }
 
 func newAPIClient(url string, key string) *apiClient {
@@ -45,6 +46,7 @@ func (c *apiClient) send(path, method string, params, out any) error {
 	}
 
 	req.Header.Set("User-Agent", "coingate-go")
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.key))
 
 	res, err := c.client.Do(req)
@@ -54,7 +56,7 @@ func (c *apiClient) send(path, method string, params, out any) error {
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		var resErr apiError
+		var resErr Error
 		if err := json.NewDecoder(res.Body).Decode(&resErr); err != nil {
 			return err
 		}

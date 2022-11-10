@@ -18,3 +18,10 @@ type CreateOrder struct {
 	ID         int    `json:"id"`
 	PaymentURL string `json:"payment_url"`
 }
+
+type PaymentEvent struct {
+	ID              int     `form:"id"`
+	OrderID         string  `form:"order_id"`
+	Status          string  `form:"status"`
+	UnderpaidAmount float64 `form:"underpaid_amount"`
+}
